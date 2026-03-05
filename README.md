@@ -1,4 +1,12 @@
-# scanme
+# scanner
+
+![Version](https://img.shields.io/badge/version-0.2.0-blue.svg)
+![Tests](https://github.com/Farbdrucker/wozapftes/actions/workflows/tests.yml/badge.svg)
+![CI](https://github.com/Farbdrucker/wozapftes/actions/workflows/ci.yml/badge.svg)
+![Python](https://img.shields.io/badge/python-3.12+-blue.svg)
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+
+(ai generated - to be edited...)
 
 A local-first document inbox that automatically classifies, OCRs, and renames uploaded files using a local LLM via Ollama — no cloud services required.
 
