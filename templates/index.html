@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>scanme</title>
+  <link rel="stylesheet" href="/static/style.css" />
+  <script src="https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js" defer></script>
+</head>
+<body>
+  <header>
+    <h1>scanme</h1>
+    <p>Upload a document — AI will rename it for you.</p>
+  </header>
+
+  <div class="card">
+    <h2>Upload</h2>
+    <p class="card-hint">PDF, image, or multiple photos — multi-page scans are merged automatically.</p>
+    <form
+      hx-post="/upload"
+      hx-encoding="multipart/form-data"
+      hx-target="#result"
+      hx-indicator="#spinner"
+    >
+      <label class="upload-area" for="file-input">
+        <span><strong>Choose file(s)</strong> or tap to capture</span>
+        <input
+          id="file-input"
+          type="file"
+          name="files"
+          accept="application/pdf,image/*"
+          capture="environment"
+          multiple
+          onchange="document.getElementById('file-name').textContent = this.files.length > 1 ? this.files.length + ' files selected' : (this.files[0]?.name ?? '')"
+        />
+        <div id="file-name"></div>
+      </label>
+
+      <div id="spinner" class="spinner-wrap">
+        <div class="spinner-ring"></div>
+        <span>Uploading&hellip;</span>
+      </div>
+      <button type="submit" class="btn">Upload &amp; Classify</button>
+    </form>
+
+    <div id="result" style="margin-top:1rem;"></div>
+  </div>
+
+  <div class="card">
+    <h2>Saved documents</h2>
+    <form class="search-row"
+          hx-get="/files"
+          hx-target="#file-list-section"
+          hx-swap="innerHTML"
+          hx-trigger="input delay:400ms, submit">
+      <input class="search-input" type="search" name="q"
+             placeholder="Search tags or text…" autocomplete="off">
+      <input class="date-input" type="month" name="date"
+             title="Filter by month">
+    </form>
+    <div id="file-list-section"
+         hx-get="/files"
+         hx-trigger="load"
+         hx-swap="innerHTML"></div>
+  </div>
+</body>
+</html>
