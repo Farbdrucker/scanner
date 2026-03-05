@@ -20,14 +20,25 @@ _DATE_MDY = re.compile(r"^(\d{2})/(\d{2})/(\d{4})$")     # MM/DD/YYYY
 # JSON code-fence the model sometimes wraps output in
 _JSON_FENCE = re.compile(r"```(?:json)?\s*([\s\S]+?)\s*```", re.IGNORECASE)
 
-_SYSTEM_PROMPT = (
+_SYSTEM_PROMPT_ENG = (
     "You are a document classifier. Analyse the provided document and extract:\n"
     "1. The most relevant date (use document date if present, otherwise today's date in YYYY-MM-DD format).\n"
-    "2. Up to 5 short, lowercase, hyphenated tags that describe the document type and key topics "
+    "2. Up to 4 short, lowercase, hyphenated tags that describe the document type and key topics "
     "(e.g. invoice, receipt, contract, bank-statement, medical, insurance) and who is the sender.\n"
     "3. If this is an invoice, bill, or payment notice: the payment due date in YYYY-MM-DD format, or null if not found.\n"
     'Return ONLY a JSON object with keys "date", "tags", and "due_date" — no extra text.\n'
     'Example: {"date": "2024-02-27", "tags": ["invoice", "acme"], "due_date": "2024-03-15"}'
+)
+
+_SYSTEM_PROMPT_DE = (
+    "Du bist ein Dokumentklassifizierer. Analysiere das bereitgestellte Dokument und extrahiere:\n"
+    "1. Das relevanteste Datum (verwende das Dokumentdatum, falls vorhanden, andernfalls das heutige Datum im Format JJJJ-MM-TT).\n"
+    "2. Bis zu 4 kurze, kleingeschriebene, durch Bindestriche getrennte Tags, die den Dokumenttyp und die wichtigsten Themen "
+    "beschreiben (z. B. rechnung, quittung, vertrag, kontoauszug, medizinisch, versicherung) sowie den Absender.\n"
+    "3. Falls es sich um eine Rechnung, Zahlungsaufforderung oder Zahlungsbenachrichtigung handelt: das Fälligkeitsdatum "
+    "der Zahlung im Format JJJJ-MM-TT oder null, falls nicht gefunden.\n"
+    'Gib AUSSCHLIESSLICH ein JSON-Objekt mit den Key "date", "tags" und "due_date" zurück — keinen zusätzlichen Text.\n'
+    'Beispiel: {"date": "2024-02-27", "tags": ["rechnung", "acme"], "due_date": "2024-03-15"}'
 )
 
 _VISION_SYSTEM_PROMPT = (
@@ -40,6 +51,7 @@ _VISION_SYSTEM_PROMPT = (
     'Example: {"date": "2024-02-27", "tags": ["invoice", "acme"], "content": "...", "due_date": "2024-03-15"}'
 )
 
+NUM_TAGS = 4
 
 def _normalise_date(v: str) -> str:
     """Return v as YYYY-MM-DD, or today if it can't be parsed."""
@@ -84,7 +96,7 @@ class DocumentMetadata(BaseModel):
     def validate_tags(cls, v: list[str]) -> list[str]:
         if not v:
             return ["document"]
-        cleaned = [re.sub(r"[^a-z0-9-]", "", t.lower()) for t in v[:5]]
+        cleaned = [re.sub(r"[^a-z0-9-]", "", t.lower()) for t in v[:NUM_TAGS]]
         return [t for t in cleaned if t] or ["document"]
 
     @field_validator("due_date", mode="before")
@@ -108,7 +120,7 @@ def _text_agent() -> Agent[None, str]:
     return Agent(
         _ollama(settings.text_model),
         output_type=str,
-        system_prompt=_SYSTEM_PROMPT,
+        system_prompt=_SYSTEM_PROMPT_DE,
         retries=0,
     )
 

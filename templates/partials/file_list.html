@@ -20,24 +20,7 @@
 {% if docs %}
 <ul class="doc-list">
   {% for doc in docs %}
-  <li>
-    <a class="doc-card" href="/file/{{ doc.id }}" target="_blank" rel="noopener">
-      <div class="doc-header">
-        <span class="doc-date">{{ doc.date }}</span>
-        <span class="doc-ext">{{ doc.ext }}</span>
-        {% if doc.is_fallback %}<span class="badge-fallback">unclassified</span>{% endif %}
-        {% if doc.due_date %}<span class="badge-due badge-due-{{ doc.due_status }}">due {{ doc.due_date }}</span>{% endif %}
-      </div>
-      <div class="doc-tags">
-        {% for tag in doc.tags %}<span class="tag">{{ tag }}</span>{% endfor %}
-      </div>
-      <div class="doc-footer">
-        <span class="doc-original">{{ doc.original_filename }}</span>
-        <span class="doc-size">{{ doc.size_display }}</span>
-        <span class="doc-code">{{ doc.short_code }}</span>
-      </div>
-    </a>
-  </li>
+  {% include 'partials/_doc_card.html' %}
   {% endfor %}
   {% if has_more %}
   <li class="load-more-item">
@@ -54,24 +37,7 @@
 
 {% else %}
 {% for doc in docs %}
-<li>
-  <a class="doc-card" href="/file/{{ doc.id }}" target="_blank" rel="noopener">
-    <div class="doc-header">
-      <span class="doc-date">{{ doc.date }}</span>
-      <span class="doc-ext">{{ doc.ext }}</span>
-      {% if doc.is_fallback %}<span class="badge-fallback">unclassified</span>{% endif %}
-      {% if doc.due_date %}<span class="badge-due badge-due-{{ doc.due_status }}">due {{ doc.due_date }}</span>{% endif %}
-    </div>
-    <div class="doc-tags">
-      {% for tag in doc.tags %}<span class="tag">{{ tag }}</span>{% endfor %}
-    </div>
-    <div class="doc-footer">
-      <span class="doc-original">{{ doc.original_filename }}</span>
-      <span class="doc-size">{{ doc.size_display }}</span>
-      <span class="doc-code">{{ doc.short_code }}</span>
-    </div>
-  </a>
-</li>
+{% include 'partials/_doc_card.html' %}
 {% endfor %}
 {% if has_more %}
 <li class="load-more-item">

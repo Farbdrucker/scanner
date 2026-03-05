@@ -1,0 +1,26 @@
+<li id="doc-card-{{ doc.id }}">
+  <div class="doc-card"
+       hx-get="/document/{{ doc.id }}/detail"
+       hx-target="#doc-modal-inner"
+       hx-swap="innerHTML"
+       hx-on::after-request="document.getElementById('doc-modal').showModal()"
+       role="button" tabindex="0">
+    <div class="doc-header">
+      <span class="doc-date">{{ doc.date }}</span>
+      <span class="doc-ext">{{ doc.ext }}</span>
+      {% if doc.is_fallback %}<span class="badge-fallback">unclassified</span>{% endif %}
+      {% if doc.due_date %}<span class="badge-due badge-due-{{ doc.due_status }}">due {{ doc.due_date }}</span>{% endif %}
+      {% if doc.is_paid %}<span class="badge-paid">paid</span>{% endif %}
+    </div>
+    <div class="doc-tags">
+      {% for tag in doc.tags %}<span class="tag">{{ tag }}</span>{% endfor %}
+    </div>
+    <div class="doc-footer">
+      <span class="doc-original">{{ doc.original_filename }}</span>
+      <span class="doc-size">{{ doc.size_display }}</span>
+      <a class="doc-open" href="/file/{{ doc.id }}" target="_blank" rel="noopener"
+         onclick="event.stopPropagation()">↗</a>
+      <span class="doc-code">{{ doc.short_code }}</span>
+    </div>
+  </div>
+</li>

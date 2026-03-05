@@ -1,3 +1,5 @@
+import base64
+
 from fastapi import APIRouter, HTTPException, Query, Request
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
@@ -5,6 +7,7 @@ from fastapi.templating import Jinja2Templates
 from app.config import settings
 from app.db import get_document, query_documents
 from app.jobs import job_queue
+from app.pdf import render_first_page
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
@@ -35,6 +38,34 @@ async def file_list(
             "offset": offset,
             "has_more": has_more,
             "next_offset": offset + 10,
+        },
+    )
+
+
+@router.get("/document/{doc_id}/detail", response_class=HTMLResponse)
+async def doc_detail(request: Request, doc_id: int) -> HTMLResponse:
+    doc = await get_document(doc_id)
+    if not doc:
+        raise HTTPException(status_code=404)
+    thumbnail_b64: str | None = None
+    path = settings.doc_dir / doc.stored_filename
+    is_pdf = doc.content_type == "application/pdf" or path.suffix.lower() == ".pdf"
+    is_image = doc.content_type.startswith("image/") or path.suffix.lower() in {
+        ".jpg", ".jpeg", ".png", ".gif", ".webp", ".heic", ".heif",
+    }
+    if path.exists() and is_pdf:
+        try:
+            png = render_first_page(path)
+            thumbnail_b64 = base64.b64encode(png).decode()
+        except Exception:
+            pass
+    return templates.TemplateResponse(
+        "partials/doc_detail.html",
+        {
+            "request": request,
+            "doc": doc,
+            "thumbnail_b64": thumbnail_b64,
+            "is_image": is_image and not is_pdf,
         },
     )
 

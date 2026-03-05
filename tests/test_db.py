@@ -155,17 +155,17 @@ async def test_insert_duplicate_ignored():
 
 
 def test_size_display_bytes():
-    doc = Document(1, "x.pdf", "x.pdf", "2024-01-01", [], "", 512, "application/pdf", False, "", None, "")
+    doc = Document(1, "x.pdf", "x.pdf", "2024-01-01", [], "", 512, "application/pdf", False, "", None, None, "")
     assert doc.size_display == "512 B"
 
 
 def test_size_display_kb():
-    doc = Document(1, "x.pdf", "x.pdf", "2024-01-01", [], "", 2048, "application/pdf", False, "", None, "")
+    doc = Document(1, "x.pdf", "x.pdf", "2024-01-01", [], "", 2048, "application/pdf", False, "", None, None, "")
     assert doc.size_display == "2.0 KB"
 
 
 def test_ext_property():
-    doc = Document(1, "file.PDF", "file.PDF", "2024-01-01", [], "", 0, "", False, "", None, "")
+    doc = Document(1, "file.PDF", "file.PDF", "2024-01-01", [], "", 0, "", False, "", None, None, "")
     assert doc.ext == "PDF"
 
 

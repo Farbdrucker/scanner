@@ -1,0 +1,61 @@
+<div class="modal-header">
+  <h2 class="modal-title">{{ doc.original_filename }}</h2>
+  <div class="modal-actions">
+    <a class="btn-open-file" href="/file/{{ doc.id }}" target="_blank" rel="noopener"
+       title="Open file in new tab">↗ Open</a>
+    <form method="dialog"><button class="btn-close" aria-label="Close">✕</button></form>
+  </div>
+</div>
+
+{% if thumbnail_b64 %}
+<div class="modal-thumb">
+  <img src="data:image/png;base64,{{ thumbnail_b64 }}" alt="Document preview" class="thumb-img">
+</div>
+{% elif is_image %}
+<div class="modal-thumb">
+  <img src="/file/{{ doc.id }}" alt="Document preview" class="thumb-img">
+</div>
+{% endif %}
+
+<div class="modal-meta">
+  <span class="doc-ext">{{ doc.ext }}</span>
+  <span class="doc-size">{{ doc.size_display }}</span>
+  <span class="doc-code">{{ doc.short_code }}</span>
+  {% if doc.is_paid %}<span class="badge-paid">paid</span>{% endif %}
+</div>
+
+<form hx-post="/document/{{ doc.id }}/edit"
+      hx-target="#doc-card-{{ doc.id }}"
+      hx-swap="outerHTML"
+      hx-on::after-request="document.getElementById('doc-modal').close()"
+      class="edit-form">
+
+  <label class="field-label">Tags <span class="field-hint">(comma-separated)</span>
+    <input class="search-input" type="text" name="tags"
+           value="{{ doc.tags | join(', ') }}">
+  </label>
+
+  <label class="field-label">Document date
+    <input class="date-input" type="date" name="date" value="{{ doc.date }}">
+  </label>
+
+  <label class="field-label">Due date
+    <input class="date-input" type="date" name="due_date"
+           value="{{ doc.due_date or '' }}">
+  </label>
+
+  <label class="field-label">Display filename
+    <input class="search-input" type="text" name="original_filename"
+           value="{{ doc.original_filename }}">
+  </label>
+
+  <label class="paid-row">
+    <input type="checkbox" name="paid" value="on" {% if doc.is_paid %}checked{% endif %}>
+    Mark as paid
+    {% if doc.is_paid and doc.paid_at %}
+      <span class="field-hint">paid {{ doc.paid_at[:10] }}</span>
+    {% endif %}
+  </label>
+
+  <button type="submit" class="btn">Save changes</button>
+</form>

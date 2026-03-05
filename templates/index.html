@@ -54,7 +54,7 @@
           hx-swap="innerHTML"
           hx-trigger="input delay:400ms, submit">
       <input class="search-input" type="search" name="q"
-             placeholder="Search tags or text…" autocomplete="off">
+             placeholder="Search tags, code or text…" autocomplete="off">
       <input class="date-input" type="month" name="date"
              title="Filter by month">
     </form>
@@ -63,5 +63,8 @@
          hx-trigger="load"
          hx-swap="innerHTML"></div>
   </div>
+  <dialog id="doc-modal">
+    <div id="doc-modal-inner"></div>
+  </dialog>
 </body>
 </html>

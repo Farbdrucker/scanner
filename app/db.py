@@ -45,7 +45,12 @@ class Document:
     is_fallback: bool
     uploaded_at: str
     due_date: str | None
+    paid_at: str | None
     short_code: str
+
+    @property
+    def is_paid(self) -> bool:
+        return self.paid_at is not None
 
     @property
     def size_display(self) -> str:
@@ -94,20 +99,23 @@ async def init_db() -> None:
         for col_ddl in [
             "ALTER TABLE documents ADD COLUMN due_date TEXT",
             "ALTER TABLE documents ADD COLUMN short_code TEXT",
+            "ALTER TABLE documents ADD COLUMN paid_at TEXT",
         ]:
             try:
                 await db.execute(col_ddl)
                 await db.commit()
             except aiosqlite.OperationalError:
                 pass  # column already exists
-        # Backfill short_code for rows that don't have one yet
+    # Filesystem backfill runs first so its rows exist before we assign codes
+    await _backfill_from_filesystem()
+    # Backfill short_code for any rows still missing one (new or filesystem-inserted)
+    async with aiosqlite.connect(settings.db_path) as db:
         async with db.execute("SELECT id FROM documents WHERE short_code IS NULL") as cur:
             rows = await cur.fetchall()
         for (doc_id,) in rows:
             code = await _unique_short_code(db)
             await db.execute("UPDATE documents SET short_code = ? WHERE id = ?", (code, doc_id))
         await db.commit()
-    await _backfill_from_filesystem()
 
 
 async def _backfill_from_filesystem() -> None:
@@ -189,18 +197,19 @@ async def query_documents(
     """
     sql = """
         SELECT id, stored_filename, original_filename, date, tags, extracted_text,
-               file_size, content_type, is_fallback, uploaded_at, due_date, short_code
+               file_size, content_type, is_fallback, uploaded_at, due_date, paid_at, short_code
         FROM documents
         WHERE (? = '' OR tags LIKE '%' || ? || '%'
                       OR extracted_text LIKE '%' || ? || '%'
-                      OR original_filename LIKE '%' || ? || '%')
+                      OR original_filename LIKE '%' || ? || '%'
+                      OR short_code = ?)
           AND (? = '' OR date LIKE ? || '%')
         ORDER BY uploaded_at DESC
         LIMIT ? OFFSET ?
     """
     async with aiosqlite.connect(settings.db_path) as db:
         db.row_factory = aiosqlite.Row
-        async with db.execute(sql, (q, q, q, q, date, date, limit + 1, offset)) as cursor:
+        async with db.execute(sql, (q, q, q, q, q, date, date, limit + 1, offset)) as cursor:
             rows = await cursor.fetchall()
     has_more = len(rows) > limit
     return [_row_to_doc(r) for r in rows[:limit]], has_more
@@ -216,6 +225,25 @@ async def get_document(doc_id: int) -> Document | None:
     return _row_to_doc(row) if row else None
 
 
+async def update_document(
+    doc_id: int,
+    *,
+    tags: list[str],
+    date: str,
+    due_date: str | None,
+    paid_at: str | None,
+    original_filename: str,
+) -> None:
+    async with aiosqlite.connect(settings.db_path) as db:
+        await db.execute(
+            """UPDATE documents
+               SET tags=?, date=?, due_date=?, paid_at=?, original_filename=?
+               WHERE id=?""",
+            (json.dumps(tags), date, due_date, paid_at, original_filename, doc_id),
+        )
+        await db.commit()
+
+
 def _row_to_doc(row: aiosqlite.Row) -> Document:
     return Document(
         id=row["id"],
@@ -229,5 +257,6 @@ def _row_to_doc(row: aiosqlite.Row) -> Document:
         is_fallback=bool(row["is_fallback"]),
         uploaded_at=row["uploaded_at"],
         due_date=row["due_date"],
+        paid_at=row["paid_at"],
         short_code=row["short_code"] or "",
     )
