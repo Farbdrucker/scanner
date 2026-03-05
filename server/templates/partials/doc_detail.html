@@ -21,6 +21,7 @@
   <span class="doc-ext">{{ doc.ext }}</span>
   <span class="doc-size">{{ doc.size_display }}</span>
   <span class="doc-code">{{ doc.short_code }}</span>
+  {% if doc.due_date %}<span class="badge-due badge-due-{{ doc.due_status }}">due {{ doc.due_date }}</span>{% endif %}
   {% if doc.is_paid %}<span class="badge-paid">paid</span>{% endif %}
 </div>
 

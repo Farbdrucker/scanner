@@ -4,9 +4,7 @@ from unittest.mock import patch
 
 import cv2
 import numpy as np
-import pytest
 import pytesseract
-
 from app.ocr import _MIN_TEXT_CHARS, _auto_rotate, extract_text_from_image
 
 
@@ -50,7 +48,10 @@ def test_strips_whitespace():
 
 def test_returns_none_on_tesseract_error():
     png = _make_plain_png()
-    with patch("pytesseract.image_to_string", side_effect=pytesseract.TesseractError(1, "crash")):
+    with patch(
+        "pytesseract.image_to_string",
+        side_effect=pytesseract.TesseractError(1, "crash"),
+    ):
         assert extract_text_from_image(png) is None
 
 
@@ -61,6 +62,7 @@ def test_passes_lang_setting():
         extract_text_from_image(png)
     _, kwargs = mock_ocr.call_args
     from app.config import settings
+
     assert kwargs.get("lang") == settings.ocr_lang
 
 
@@ -80,6 +82,7 @@ def test_min_chars_boundary():
 # ---------------------------------------------------------------------------
 # _auto_rotate
 # ---------------------------------------------------------------------------
+
 
 def _make_gray(width: int = 100, height: int = 120) -> np.ndarray:
     return np.full((height, width), 180, dtype=np.uint8)
@@ -119,6 +122,8 @@ def test_auto_rotate_270():
 def test_auto_rotate_osd_error_returns_original():
     """OSD failure (e.g. too few chars) → original image returned unchanged."""
     gray = _make_gray()
-    with patch("pytesseract.image_to_osd", side_effect=pytesseract.TesseractError(1, "too few")):
+    with patch(
+        "pytesseract.image_to_osd", side_effect=pytesseract.TesseractError(1, "too few")
+    ):
         result = _auto_rotate(gray)
     np.testing.assert_array_equal(result, gray)

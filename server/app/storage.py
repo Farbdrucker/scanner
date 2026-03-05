@@ -8,7 +8,9 @@ from app.config import settings
 
 def build_filename(date: str, tags: list[str], ext: str) -> str:
     """Build filename like 2024-01-15_invoice-acme.pdf"""
-    safe_tags = [re.sub(r"[^a-z0-9-]", "", re.sub(r"[\s_]+", "-", t.lower())) for t in tags]
+    safe_tags = [
+        re.sub(r"[^a-z0-9-]", "", re.sub(r"[\s_]+", "-", t.lower())) for t in tags
+    ]
     safe_tags = [t for t in safe_tags if t][:5]
     tag_str = "-".join(safe_tags) if safe_tags else "document"
     clean_ext = ext.lstrip(".")
