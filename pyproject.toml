@@ -1,7 +1,7 @@
 [project]
 name = "scanme"
 version = "0.1.0"
-description = "Add your description here"
+description = "CLI and web app to scan, manage and analye invoices"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
@@ -11,7 +11,6 @@ dependencies = [
     "pydantic-settings>=2.0.0",
     "pymupdf>=1.25.0",
     "python-multipart>=0.0.20",
-    "rich>=14.3.3",
     "uvicorn>=0.41.0",
     "numpy>=1.26.0",
     "opencv-python-headless>=4.9.0",
@@ -27,6 +26,22 @@ dev = [
     "ruff>=0.15.4",
     "ty>=0.0.20",
 ]
+cli = [
+    "typer>=0.12.0",
+    "httpx>=0.28.0",
+    "python-dotenv>=1.0.0",
+    "rich>=14.3.3",
+]
+
+[project.scripts]
+scanme = "cli.main:app"
+
+[tool.uv]
+package = true
+
+[tool.setuptools.packages.find]
+include = ["cli*"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+pythonpath = ["server"]
