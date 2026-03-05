@@ -1,5 +1,6 @@
 import re
 from datetime import datetime
+from pathlib import Path
 
 from fastapi import APIRouter, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse
@@ -7,8 +8,9 @@ from fastapi.templating import Jinja2Templates
 
 from app.db import get_document, update_document
 
+_TEMPLATES_DIR = Path(__file__).parent.parent.parent / "templates"
 router = APIRouter()
-templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory=str(_TEMPLATES_DIR))
 
 
 @router.post("/document/{doc_id}/edit", response_class=HTMLResponse)

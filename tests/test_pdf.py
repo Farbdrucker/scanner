@@ -1,6 +1,4 @@
-
 import fitz
-
 from app.pdf import extract_text, images_to_pdf, render_first_page
 
 

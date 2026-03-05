@@ -5,13 +5,12 @@ from unittest.mock import AsyncMock, patch
 import cv2
 import numpy as np
 import pytest
-
 from app.image import correct_perspective, make_preview
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _make_plain_png(width: int = 100, height: int = 120) -> bytes:
     """Small solid-grey PNG with no detectable document quad."""
@@ -57,6 +56,7 @@ def _make_small_jpeg(width: int = 50, height: int = 60) -> bytes:
 # correct_perspective
 # ---------------------------------------------------------------------------
 
+
 def test_correct_perspective_plain_png_returns_original():
     """No quad detectable → original bytes returned unchanged."""
     data = _make_plain_png()
@@ -89,6 +89,7 @@ def test_correct_perspective_empty_bytes_returns_input():
 # make_preview
 # ---------------------------------------------------------------------------
 
+
 def test_make_preview_returns_data_uri():
     data = _make_wide_jpeg()
     uri = make_preview(data)
@@ -101,6 +102,7 @@ def test_make_preview_downsamples_wide_image():
     assert uri.startswith("data:image/jpeg;base64,")
     # Decode and check width
     import base64
+
     b64_part = uri.split(",", 1)[1]
     img_bytes = base64.b64decode(b64_part)
     arr = np.frombuffer(img_bytes, dtype=np.uint8)
@@ -113,6 +115,7 @@ def test_make_preview_does_not_upscale_small_image():
     data = _make_small_jpeg(width=50)
     uri = make_preview(data, max_width=400)
     import base64
+
     b64_part = uri.split(",", 1)[1]
     img_bytes = base64.b64decode(b64_part)
     arr = np.frombuffer(img_bytes, dtype=np.uint8)
@@ -132,6 +135,7 @@ def test_make_preview_empty_bytes_returns_empty():
 # ---------------------------------------------------------------------------
 # Integration: process_upload
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.asyncio
 async def test_process_upload_image_returns_preview(tmp_path):
@@ -162,7 +166,6 @@ async def test_process_upload_image_returns_preview(tmp_path):
 async def test_process_upload_text_pdf_returns_empty_preview(tmp_path):
     """Text PDFs should return preview_b64 == ''."""
     import fitz
-
     from app.agents import DocumentMetadata
     from app.pipeline import process_upload
 

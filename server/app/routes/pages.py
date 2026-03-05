@@ -1,4 +1,5 @@
 import base64
+from pathlib import Path
 
 from fastapi import APIRouter, HTTPException, Query, Request
 from fastapi.responses import FileResponse, HTMLResponse
@@ -9,8 +10,9 @@ from app.db import get_document, query_documents
 from app.jobs import job_queue
 from app.pdf import render_first_page
 
+_TEMPLATES_DIR = Path(__file__).parent.parent.parent / "templates"
 router = APIRouter()
-templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory=str(_TEMPLATES_DIR))
 
 
 @router.get("/", response_class=HTMLResponse)
@@ -25,7 +27,9 @@ async def file_list(
     date: str = Query(default=""),
     offset: int = Query(default=0),
 ) -> HTMLResponse:
-    docs, has_more = await query_documents(q=q.strip(), date=date.strip(), offset=offset)
+    docs, has_more = await query_documents(
+        q=q.strip(), date=date.strip(), offset=offset
+    )
     active_jobs = job_queue.get_active()
     return templates.TemplateResponse(
         "partials/file_list.html",
@@ -51,7 +55,13 @@ async def doc_detail(request: Request, doc_id: int) -> HTMLResponse:
     path = settings.doc_dir / doc.stored_filename
     is_pdf = doc.content_type == "application/pdf" or path.suffix.lower() == ".pdf"
     is_image = doc.content_type.startswith("image/") or path.suffix.lower() in {
-        ".jpg", ".jpeg", ".png", ".gif", ".webp", ".heic", ".heif",
+        ".jpg",
+        ".jpeg",
+        ".png",
+        ".gif",
+        ".webp",
+        ".heic",
+        ".heif",
     }
     if path.exists() and is_pdf:
         try:

@@ -1,3 +1,5 @@
+.idea
+
 # Python-generated files
 __pycache__/
 *.py[oc]
@@ -8,10 +10,18 @@ wheels/
 
 # Virtual environments
 .venv
+
 test.pdf
 iphone_test.HEIC
+
 .env
-.idea
-plan.md
+cli/.env
+server/.env
+
+
+
 docs/
+
+plan.md
 CLAUDE.md
+

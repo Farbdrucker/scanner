@@ -20,7 +20,9 @@ _IMAGE_TYPES = {
 }
 
 
-async def process_upload(file_bytes: bytes, original_filename: str) -> tuple[Path, str, str]:
+async def process_upload(
+    file_bytes: bytes, original_filename: str
+) -> tuple[Path, str, str]:
     """
     Classify and store an uploaded file.
 

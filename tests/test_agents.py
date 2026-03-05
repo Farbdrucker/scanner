@@ -2,7 +2,6 @@ from datetime import date
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-
 from app.agents import DocumentMetadata, classify_image, classify_text
 from app.config import settings
 from pydantic_ai.models.openai import OpenAIChatModel
@@ -18,7 +17,9 @@ def _make_mock_agent(json_str: str) -> MagicMock:
 
 
 _TEXT_JSON = '{"date": "2024-01-15", "tags": ["invoice"]}'
-_VISION_JSON = '{"date": "2024-01-15", "tags": ["receipt"], "content": "Scanned text here."}'
+_VISION_JSON = (
+    '{"date": "2024-01-15", "tags": ["receipt"], "content": "Scanned text here."}'
+)
 
 MOCK_TEXT_METADATA = DocumentMetadata(date="2024-01-15", tags=["invoice"])
 MOCK_VISION_METADATA = DocumentMetadata(
@@ -29,7 +30,9 @@ MOCK_VISION_METADATA = DocumentMetadata(
 def _get_model_name(mock_agent_cls: MagicMock) -> str:
     """Extract the model name from the OpenAIChatModel passed to Agent()."""
     model_arg = mock_agent_cls.call_args[0][0]
-    assert isinstance(model_arg, OpenAIChatModel), f"Expected OpenAIChatModel, got {type(model_arg)}"
+    assert isinstance(model_arg, OpenAIChatModel), (
+        f"Expected OpenAIChatModel, got {type(model_arg)}"
+    )
     return model_arg.model_name
 
 
@@ -124,8 +127,10 @@ async def test_classify_text_caps_input_at_8000_chars():
 
 # --- _parse_metadata JSON extraction ---
 
+
 def test_parse_metadata_plain_json():
     from app.agents import _parse_metadata
+
     m = _parse_metadata('{"date": "2024-02-27", "tags": ["fahrschein"]}', "test")
     assert m.date == "2024-02-27"
     assert "fahrschein" in m.tags
@@ -133,6 +138,7 @@ def test_parse_metadata_plain_json():
 
 def test_parse_metadata_fenced_json():
     from app.agents import _parse_metadata
+
     raw = '```json\n{"date": "2024-02-27", "tags": ["ticket"]}\n```'
     m = _parse_metadata(raw, "test")
     assert m.date == "2024-02-27"
@@ -140,20 +146,24 @@ def test_parse_metadata_fenced_json():
 
 def test_parse_metadata_json_in_preamble():
     from app.agents import _parse_metadata
+
     raw = 'Here is the result:\n{"date": "2024-02-27", "tags": ["ticket"]}'
     m = _parse_metadata(raw, "test")
     assert m.date == "2024-02-27"
 
 
 def test_parse_metadata_no_json_returns_fallback():
-    from app.agents import _parse_metadata
     from datetime import date
+
+    from app.agents import _parse_metadata
+
     m = _parse_metadata("I cannot determine the date.", "test")
     assert m.date == date.today().isoformat()
     assert m.tags == ["document"]
 
 
 # --- DocumentMetadata date normalisation ---
+
 
 def test_date_iso_passthrough():
     m = DocumentMetadata(date="2024-02-27", tags=["ticket"])

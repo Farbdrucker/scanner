@@ -4,7 +4,8 @@ import random
 import re
 import string
 from dataclasses import dataclass
-from datetime import date as _date, datetime
+from datetime import date as _date
+from datetime import datetime
 from pathlib import Path
 
 import aiosqlite
@@ -27,7 +28,9 @@ async def _unique_short_code(db: aiosqlite.Connection) -> str:
     """Generate a code not yet in the DB (collision extremely unlikely)."""
     while True:
         code = _generate_short_code()
-        async with db.execute("SELECT 1 FROM documents WHERE short_code = ?", (code,)) as cur:
+        async with db.execute(
+            "SELECT 1 FROM documents WHERE short_code = ?", (code,)
+        ) as cur:
             if await cur.fetchone() is None:
                 return code
 
@@ -66,7 +69,10 @@ class Document:
     def due_status(self) -> str | None:
         if not self.due_date:
             return None
-        from datetime import timedelta  # noqa: F401 (timedelta unused but import kept for clarity)
+        from datetime import (
+            timedelta,  # noqa: F401 (timedelta unused but import kept for clarity)
+        )
+
         due = _date.fromisoformat(self.due_date)
         delta = (due - _date.today()).days
         if delta < 0:
@@ -110,11 +116,15 @@ async def init_db() -> None:
     await _backfill_from_filesystem()
     # Backfill short_code for any rows still missing one (new or filesystem-inserted)
     async with aiosqlite.connect(settings.db_path) as db:
-        async with db.execute("SELECT id FROM documents WHERE short_code IS NULL") as cur:
+        async with db.execute(
+            "SELECT id FROM documents WHERE short_code IS NULL"
+        ) as cur:
             rows = await cur.fetchall()
         for (doc_id,) in rows:
             code = await _unique_short_code(db)
-            await db.execute("UPDATE documents SET short_code = ? WHERE id = ?", (code, doc_id))
+            await db.execute(
+                "UPDATE documents SET short_code = ? WHERE id = ?", (code, doc_id)
+            )
         await db.commit()
 
 
@@ -151,8 +161,17 @@ async def _backfill_from_filesystem() -> None:
                    (stored_filename, original_filename, date, tags, extracted_text,
                     file_size, content_type, is_fallback, uploaded_at)
                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-                (name, name, date, json.dumps(tags), extracted_text,
-                 file_size, "", int(is_fallback), mtime),
+                (
+                    name,
+                    name,
+                    date,
+                    json.dumps(tags),
+                    extracted_text,
+                    file_size,
+                    "",
+                    int(is_fallback),
+                    mtime,
+                ),
             )
             await db.commit()
 
@@ -176,9 +195,19 @@ async def insert_document(
                (stored_filename, original_filename, date, tags, extracted_text,
                 file_size, content_type, is_fallback, uploaded_at, due_date, short_code)
                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-            (stored_filename, original_filename, date, json.dumps(tags),
-             extracted_text, file_size, content_type, int(is_fallback),
-             datetime.now().isoformat(), due_date, short_code),
+            (
+                stored_filename,
+                original_filename,
+                date,
+                json.dumps(tags),
+                extracted_text,
+                file_size,
+                content_type,
+                int(is_fallback),
+                datetime.now().isoformat(),
+                due_date,
+                short_code,
+            ),
         )
         await db.commit()
         return cursor.lastrowid or 0
@@ -209,10 +238,22 @@ async def query_documents(
     """
     async with aiosqlite.connect(settings.db_path) as db:
         db.row_factory = aiosqlite.Row
-        async with db.execute(sql, (q, q, q, q, q, date, date, limit + 1, offset)) as cursor:
+        async with db.execute(
+            sql, (q, q, q, q, q, date, date, limit + 1, offset)
+        ) as cursor:
             rows = await cursor.fetchall()
     has_more = len(rows) > limit
     return [_row_to_doc(r) for r in rows[:limit]], has_more
+
+
+async def get_document_by_short_code(short_code: str) -> Document | None:
+    async with aiosqlite.connect(settings.db_path) as db:
+        db.row_factory = aiosqlite.Row
+        async with db.execute(
+            "SELECT * FROM documents WHERE short_code = ?", (short_code,)
+        ) as cursor:
+            row = await cursor.fetchone()
+    return _row_to_doc(row) if row else None
 
 
 async def get_document(doc_id: int) -> Document | None:

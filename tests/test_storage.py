@@ -1,9 +1,16 @@
-
-from app.storage import build_filename, fallback_filename, resolve_collision, store_markdown
+from app.storage import (
+    build_filename,
+    fallback_filename,
+    resolve_collision,
+    store_markdown,
+)
 
 
 def test_build_filename_basic():
-    assert build_filename("2024-01-15", ["invoice", "acme"], ".pdf") == "2024-01-15_invoice-acme.pdf"
+    assert (
+        build_filename("2024-01-15", ["invoice", "acme"], ".pdf")
+        == "2024-01-15_invoice-acme.pdf"
+    )
 
 
 def test_build_filename_strips_leading_dot():

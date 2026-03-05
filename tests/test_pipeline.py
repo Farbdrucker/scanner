@@ -2,7 +2,6 @@ from unittest.mock import AsyncMock, patch
 
 import fitz
 import pytest
-
 from app.agents import DocumentMetadata
 
 
@@ -45,7 +44,9 @@ async def test_pipeline_scanned_pdf(tmp_path):
     from app.pipeline import process_upload
 
     with (
-        patch("app.pipeline.extract_text_from_image", return_value="Extracted OCR text."),
+        patch(
+            "app.pipeline.extract_text_from_image", return_value="Extracted OCR text."
+        ),
         patch("app.pipeline.classify_text", new=AsyncMock(return_value=MOCK_METADATA)),
         patch("app.pipeline.store_file") as mock_store,
         patch("app.pipeline.store_markdown") as mock_md,
@@ -67,7 +68,9 @@ async def test_pipeline_image(tmp_path):
 
     with (
         patch("app.pipeline.correct_perspective", return_value=fake_png),
-        patch("app.pipeline.extract_text_from_image", return_value="Extracted OCR text."),
+        patch(
+            "app.pipeline.extract_text_from_image", return_value="Extracted OCR text."
+        ),
         patch("app.pipeline.classify_text", new=AsyncMock(return_value=MOCK_METADATA)),
         patch("app.pipeline.store_file") as mock_store,
         patch("app.pipeline.store_markdown") as mock_md,
@@ -86,7 +89,10 @@ async def test_pipeline_fallback_on_llm_error(tmp_path):
     from app.pipeline import process_upload
 
     with (
-        patch("app.pipeline.classify_text", new=AsyncMock(side_effect=RuntimeError("LLM down"))),
+        patch(
+            "app.pipeline.classify_text",
+            new=AsyncMock(side_effect=RuntimeError("LLM down")),
+        ),
         patch("app.pipeline.store_file") as mock_store,
         patch("app.pipeline.store_markdown") as mock_md,
         patch("app.pipeline.insert_document", new=AsyncMock()),

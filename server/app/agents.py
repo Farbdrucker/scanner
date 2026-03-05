@@ -14,8 +14,8 @@ logger = logging.getLogger(__name__)
 
 _DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 # Common alternative formats the LLM might produce
-_DATE_DMY = re.compile(r"^(\d{2})\.(\d{2})\.(\d{4})$")   # DD.MM.YYYY
-_DATE_MDY = re.compile(r"^(\d{2})/(\d{2})/(\d{4})$")     # MM/DD/YYYY
+_DATE_DMY = re.compile(r"^(\d{2})\.(\d{2})\.(\d{4})$")  # DD.MM.YYYY
+_DATE_MDY = re.compile(r"^(\d{2})/(\d{2})/(\d{4})$")  # MM/DD/YYYY
 
 # JSON code-fence the model sometimes wraps output in
 _JSON_FENCE = re.compile(r"```(?:json)?\s*([\s\S]+?)\s*```", re.IGNORECASE)
@@ -52,6 +52,7 @@ _VISION_SYSTEM_PROMPT = (
 )
 
 NUM_TAGS = 4
+
 
 def _normalise_date(v: str) -> str:
     """Return v as YYYY-MM-DD, or today if it can't be parsed."""
