@@ -1,0 +1,20 @@
+{% if success %}
+<div class="result-success">
+  <strong>Queued!</strong>
+  {{ filename }} — processing in background
+</div>
+{% else %}
+<div class="result-error">
+  <strong>Upload failed</strong>
+  {{ error }}
+</div>
+{% endif %}
+
+{# Refresh the file list after every upload attempt #}
+<div
+  id="file-list-section"
+  hx-get="/files"
+  hx-trigger="load"
+  hx-swap="innerHTML"
+  hx-target="#file-list-section"
+></div>

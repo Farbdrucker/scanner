@@ -1,0 +1,84 @@
+{% if offset == 0 %}
+{% if active_jobs %}
+<div hx-get="/files" hx-trigger="every 2s"
+     hx-target="#file-list-section" hx-swap="innerHTML"
+     hx-include=".search-row"
+     style="display:none"></div>
+{% endif %}
+
+{% if active_jobs %}
+<ul class="file-list">
+  {% for job in active_jobs %}
+  <li class="job-item">
+    <span class="file-name">{{ job.original_filename }}</span>
+    <span class="status-badge status-{{ job.status.value }}">{{ job.status.value }}</span>
+  </li>
+  {% endfor %}
+</ul>
+{% endif %}
+
+{% if docs %}
+<ul class="doc-list">
+  {% for doc in docs %}
+  <li>
+    <a class="doc-card" href="/file/{{ doc.id }}" target="_blank" rel="noopener">
+      <div class="doc-header">
+        <span class="doc-date">{{ doc.date }}</span>
+        <span class="doc-ext">{{ doc.ext }}</span>
+        {% if doc.is_fallback %}<span class="badge-fallback">unclassified</span>{% endif %}
+        {% if doc.due_date %}<span class="badge-due badge-due-{{ doc.due_status }}">due {{ doc.due_date }}</span>{% endif %}
+      </div>
+      <div class="doc-tags">
+        {% for tag in doc.tags %}<span class="tag">{{ tag }}</span>{% endfor %}
+      </div>
+      <div class="doc-footer">
+        <span class="doc-original">{{ doc.original_filename }}</span>
+        <span class="doc-size">{{ doc.size_display }}</span>
+        <span class="doc-code">{{ doc.short_code }}</span>
+      </div>
+    </a>
+  </li>
+  {% endfor %}
+  {% if has_more %}
+  <li class="load-more-item">
+    <button class="btn-load-more"
+            hx-get="/files?q={{ q }}&date={{ date }}&offset={{ next_offset }}"
+            hx-target="closest li"
+            hx-swap="outerHTML">Load more</button>
+  </li>
+  {% endif %}
+</ul>
+{% elif not active_jobs %}
+<p class="empty">No documents saved yet.</p>
+{% endif %}
+
+{% else %}
+{% for doc in docs %}
+<li>
+  <a class="doc-card" href="/file/{{ doc.id }}" target="_blank" rel="noopener">
+    <div class="doc-header">
+      <span class="doc-date">{{ doc.date }}</span>
+      <span class="doc-ext">{{ doc.ext }}</span>
+      {% if doc.is_fallback %}<span class="badge-fallback">unclassified</span>{% endif %}
+      {% if doc.due_date %}<span class="badge-due badge-due-{{ doc.due_status }}">due {{ doc.due_date }}</span>{% endif %}
+    </div>
+    <div class="doc-tags">
+      {% for tag in doc.tags %}<span class="tag">{{ tag }}</span>{% endfor %}
+    </div>
+    <div class="doc-footer">
+      <span class="doc-original">{{ doc.original_filename }}</span>
+      <span class="doc-size">{{ doc.size_display }}</span>
+      <span class="doc-code">{{ doc.short_code }}</span>
+    </div>
+  </a>
+</li>
+{% endfor %}
+{% if has_more %}
+<li class="load-more-item">
+  <button class="btn-load-more"
+          hx-get="/files?q={{ q }}&date={{ date }}&offset={{ next_offset }}"
+          hx-target="closest li"
+          hx-swap="outerHTML">Load more</button>
+</li>
+{% endif %}
+{% endif %}
