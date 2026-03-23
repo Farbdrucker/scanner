@@ -3,8 +3,9 @@ from datetime import datetime
 from typing import Any
 
 import aiosqlite
+import httpx
 from fastapi import APIRouter, File, HTTPException, UploadFile
-from fastapi.responses import JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from pydantic import BaseModel
 
 from app.config import settings
@@ -165,3 +166,35 @@ async def api_edit_document(short_code: str, body: EditBody) -> JSONResponse:
     updated = await get_document_by_short_code(short_code)
     assert updated is not None
     return JSONResponse(_doc_to_dict(updated))
+
+
+@router.get("/health/ollama", response_class=HTMLResponse)
+async def health_ollama() -> HTMLResponse:
+    base = settings.ollama_url.rstrip("/")  # e.g. http://localhost:11434/v1
+    models_url = f"{base}/models"
+    available: set[str] = set()
+    reachable = False
+
+    try:
+        async with httpx.AsyncClient(timeout=3.0) as client:
+            resp = await client.get(models_url)
+            resp.raise_for_status()
+            data = resp.json()
+            available = {m["id"] for m in data.get("data", [])}
+            reachable = True
+    except Exception:
+        pass
+
+    wanted = {settings.text_model, settings.vision_model}
+    missing = wanted - available
+
+    if not reachable:
+        state, label = "error", "Ollama offline"
+    elif missing:
+        state, label = "warn", f"Ollama ({', '.join(sorted(missing))} missing)"
+    else:
+        state, label = "ok", "Ollama"
+
+    return HTMLResponse(
+        f'<span class="ollama-badge ollama-{state}" title="{label}">&#9679; {label}</span>'
+    )

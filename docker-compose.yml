@@ -10,3 +10,10 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     restart: unless-stopped
+
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate --url http://scanme:8000
+    depends_on:
+      - scanme
+    restart: unless-stopped

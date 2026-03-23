@@ -2,7 +2,7 @@ import tempfile
 from datetime import date as _date
 from pathlib import Path
 
-from app.agents import classify_text
+from app.agents import classify_image, classify_text
 from app.db import insert_document
 from app.image import correct_perspective, make_preview
 from app.ocr import extract_text_from_image
@@ -61,10 +61,13 @@ async def process_upload(
                 corrected = correct_perspective(file_bytes)
                 preview_b64 = make_preview(corrected)
                 ocr_text = extract_text_from_image(corrected) or ""
-                if not ocr_text:
-                    raise ValueError("OCR produced no text for image")
-                _extracted_text = ocr_text
-                metadata = await classify_text(ocr_text)
+                if ocr_text:
+                    _extracted_text = ocr_text
+                    metadata = await classify_text(ocr_text)
+                else:
+                    media_type = _IMAGE_TYPES[content_type]
+                    metadata = await classify_image(corrected, media_type)
+                    _extracted_text = metadata.content
             else:
                 corrected = correct_perspective(file_bytes)
                 preview_b64 = make_preview(corrected)
