@@ -25,3 +25,4 @@ docs/
 plan.md
 CLAUDE.md
 
+*.DS_Store

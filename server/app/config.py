@@ -7,7 +7,7 @@ _SERVER_DIR = Path(__file__).parent.parent  # server/app/ → server/
 
 class Settings(BaseSettings):
     doc_dir: Path = Path("docs")
-    db_path: Path = Path("docs.db")
+    db_path: Path = Path("docs/docs.db")
     ollama_url: str = "http://localhost:11434/v1"
     text_model: str = "llama3.2"
     vision_model: str = "llama3.2-vision"  # unused by pipeline; kept for agents.py
